@@ -7,13 +7,23 @@ import org.springframework.stereotype.Service;
 import shop.warscat.sell.dao.OrderDetailDao;
 import shop.warscat.sell.dao.OrderMasterDao;
 import shop.warscat.sell.dao.ProductInfoDao;
+import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.dto.OrderDTO;
+import shop.warscat.sell.enums.ResultEnum;
+import shop.warscat.sell.exception.SellException;
 import shop.warscat.sell.model.OrderDetail;
 import shop.warscat.sell.model.OrderMaster;
 import shop.warscat.sell.model.ProductInfo;
 import shop.warscat.sell.service.OrderService;
+import shop.warscat.sell.service.ProductInfoService;
+import shop.warscat.sell.utils.KeyUtils;
 
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,39 +38,60 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMasterDao dao;
     private final OrderDetailDao detailDao;
     private final ProductInfoDao productInfoDao;
+    private final ProductInfoService productService;
     @Autowired
-    public OrderServiceImpl(OrderMasterDao dao, OrderDetailDao detailDao, ProductInfoDao productInfoDao) {
+    public OrderServiceImpl(OrderMasterDao dao, OrderDetailDao detailDao, ProductInfoDao productInfoDao, ProductInfoService productService) {
         this.dao = dao;
         this.detailDao = detailDao;
         this.productInfoDao = productInfoDao;
+        this.productService = productService;
     }
 
     @Override
-    public OrderMaster create(OrderDTO orderDTO) {
+    @Transactional
+    public String create(OrderDTO orderDTO) {
         OrderMaster orderMaster = new OrderMaster();
-        //前台数据
-            //遍历订单商品处理
+        orderMaster.setOrderId(KeyUtils.getUniquId());
+        //遍历订单商品处理
         List<OrderDetail> orderDetailList = orderDTO.getOrderDetailList();
+        //BigInteger.ZERO减少新的实例创建
+        BigDecimal orderAmount = new BigDecimal(BigInteger.ZERO);
         for (OrderDetail orderDetail : orderDetailList) {
             //每一条订单数据
-            ProductInfo productInfo = productInfoDao.findById(orderDetail.getProductId()).orElse(new ProductInfo());
+            Optional<ProductInfo> byId = productInfoDao.findById(orderDetail.getProductId());
             //注入防护
-            orderDetail.setProductPrice(productInfo.getProductPrice());
+            if (!byId.isPresent()||byId.get().getProductStatus()==1) {
+                throw new SellException(ResultEnum.PRODUCT_NOT_EXIST);
+            }
+            ProductInfo productInfo = byId.get();
             orderDetail.setProductName(productInfo.getProductName());
-            //TODO 如果商品没上架抛异常(待完善)
-//            orderDetail.set(productInfo.getProductName());
-//            orderDetail.setProductName(productInfo.getProductName());
-            //数量
-            Integer productNum = orderDetail.getProductQuantity();
+            orderDetail.setProductPrice(productInfo.getProductPrice());
+            orderDetail.setProductIcon(productInfo.getProductIcon());
+            //加入到订单总价
+            orderAmount = productInfo.getProductPrice()
+                    .multiply(new BigDecimal(orderDetail.getProductQuantity()))
+                    .add(orderAmount);
+            //Id
+            orderDetail.setOrderId(orderMaster.getOrderId());
+            orderDetail.setDetailId(KeyUtils.getUniquId());
+            detailDao.save(orderDetail);
         }
-            //买家信息数据
+
+        //库存
+        List<CartDTO> dtoList = orderDetailList.stream()
+                .map(a -> new CartDTO(a.getProductId(), a.getProductQuantity()))
+                .collect(Collectors.toList());
+        productService.descreaseStock(dtoList);
+
+        //订单数据
         orderMaster.setBuyerName(orderDTO.getBuyerName());
+        orderMaster.setBuyerPhone(orderDTO.getBuyerPhone());
         orderMaster.setBuyerAddress(orderDTO.getBuyerAddress());
         orderMaster.setBuyerOpenid(orderDTO.getBuyerOpenid());
-        orderMaster.setBuyerPhone(orderDTO.getBuyerPhone());
-//        orderMaster.setOrderId();
+        orderMaster.setOrderAmount(orderAmount);
 
-        return null;
+        OrderMaster save = dao.save(orderMaster);
+        return orderMaster.getOrderId();
     }
 
     @Override

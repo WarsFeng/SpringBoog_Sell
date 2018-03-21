@@ -5,11 +5,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import shop.warscat.sell.dao.ProductInfoDao;
+import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.enums.ProductStatusEnmu;
+import shop.warscat.sell.enums.ResultEnum;
+import shop.warscat.sell.exception.SellException;
 import shop.warscat.sell.model.ProductInfo;
 import shop.warscat.sell.service.ProductInfoService;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,8 +25,12 @@ import java.util.List;
 @Service
 public class ProductInfoServiceImpl implements ProductInfoService {
 
+    private final ProductInfoDao dao;
+
     @Autowired
-    private ProductInfoDao dao;
+    public ProductInfoServiceImpl(ProductInfoDao dao) {
+        this.dao = dao;
+    }
 
     @Override
     public ProductInfo findOneById(String productId) {
@@ -42,5 +50,30 @@ public class ProductInfoServiceImpl implements ProductInfoService {
     @Override
     public ProductInfo save(ProductInfo productInfo) {
         return dao.save(productInfo);
+    }
+
+
+    //加减库存
+    @Override
+    public void increaseStock(List<CartDTO> proList) {
+        for (CartDTO dto : proList) {
+            Optional<ProductInfo> byId = dao.findById(dto.getProductId());
+            ProductInfo productInfo = byId.get();
+            productInfo.setProductStock(productInfo.getProductStock() + dto.getProductQuantiry());
+            dao.save(productInfo);
+        }
+    }
+
+    @Override
+    public void descreaseStock(List<CartDTO> proList) {
+        for (CartDTO cartDTO : proList) {
+            ProductInfo productInfo = dao.findById(cartDTO.getProductId()).get();
+            int newProductStock = productInfo.getProductStock() - cartDTO.getProductQuantiry();
+            if (newProductStock < 0) {
+                throw new SellException(ResultEnum.PRODUCT_STOCK_ERROR);
+            }
+            productInfo.setProductStock(newProductStock);
+            dao.save(productInfo);
+        }
     }
 }

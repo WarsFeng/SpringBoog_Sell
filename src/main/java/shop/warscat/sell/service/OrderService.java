@@ -15,8 +15,10 @@ import shop.warscat.sell.model.OrderMaster;
 
 public interface OrderService {
 
-    /**创建订单*/
-    OrderMaster create(OrderDTO orderDTO);
+    /**创建订单
+     * @return orderId
+     * */
+    String create(OrderDTO orderDTO);
     /**查询订单列表*/
     Page<OrderMaster> findList(String buyerOpenId, Pageable pageable);
     /**查询单个订单*/

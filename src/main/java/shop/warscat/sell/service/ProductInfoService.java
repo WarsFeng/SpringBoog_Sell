@@ -2,6 +2,7 @@ package shop.warscat.sell.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.model.ProductInfo;
 
 import java.util.List;
@@ -30,5 +31,10 @@ public interface ProductInfoService {
     Page<ProductInfo> findAll(Pageable pageable);
 
     ProductInfo save(ProductInfo productInfo);
+
+    //库存加减
+    void increaseStock(List<CartDTO> proList);
+
+    void descreaseStock(List<CartDTO> proList);
 
 }
