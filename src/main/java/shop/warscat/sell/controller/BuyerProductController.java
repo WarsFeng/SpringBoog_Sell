@@ -4,9 +4,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import shop.warscat.sell.VO.CategoryVO;
-import shop.warscat.sell.VO.ProductVO;
-import shop.warscat.sell.VO.ResultVO;
+import shop.warscat.sell.vo.CategoryVO;
+import shop.warscat.sell.vo.ProductVO;
+import shop.warscat.sell.vo.ResultVO;
 import shop.warscat.sell.model.ProductCategory;
 import shop.warscat.sell.model.ProductInfo;
 import shop.warscat.sell.service.ProductCategoryService;
@@ -28,34 +28,38 @@ import java.util.stream.Collectors;
 @RequestMapping("/buyer/product")
 public class BuyerProductController {
 
+    private final ProductInfoService productInfoService;
+    private final ProductCategoryService productCategoryService;
+
     @Autowired
-    private ProductInfoService productInfoService;
-    @Autowired
-    private ProductCategoryService productCategoryService;
+    public BuyerProductController(ProductInfoService productInfoService, ProductCategoryService productCategoryService) {
+        this.productInfoService = productInfoService;
+        this.productCategoryService = productCategoryService;
+    }
 
     @RequestMapping("list")
-    public ResultVO<List<CategoryVO>> List() {
+    public ResultVO List() {
         //获得所有上架商品
         List<ProductInfo> productInfoList = productInfoService.findUpAll();
         //获得商品类目
-        List<Integer> categoryTypeList = new ArrayList<Integer>();
+        List<Integer> categoryTypeList;
         categoryTypeList = productInfoList.stream()
-                .map(a -> a.getCategoryType())
+                .map(ProductInfo::getCategoryType)
                 .collect(Collectors.toList());
         List<ProductCategory> categoryList = productCategoryService.findByCategoryTypeIn(categoryTypeList);
         //封装
         List<CategoryVO> categoryVOList = new ArrayList<>();
         //封装CatagoryVO
-        for (int i = 0; i < categoryList.size(); i++) {
+        for (ProductCategory aCategoryList : categoryList) {
             CategoryVO categoryVO = new CategoryVO();
-            categoryVO.setCategoryName(categoryList.get(i).getCategoryName());
-            categoryVO.setCategoryType(categoryList.get(i).getCategoryType());
+            categoryVO.setCategoryName(aCategoryList.getCategoryName());
+            categoryVO.setCategoryType(aCategoryList.getCategoryType());
             ArrayList<ProductVO> productVOList = new ArrayList<>();
             //封装ProductVO
-            for (int i1 = 0; i1 < productInfoList.size(); i1++) {
-                if (productInfoList.get(i1).getCategoryType().equals(categoryList.get(i).getCategoryType())) {
+            for (ProductInfo aProductInfoList : productInfoList) {
+                if (aProductInfoList.getCategoryType().equals(aCategoryList.getCategoryType())) {
                     ProductVO productVO = new ProductVO();
-                    BeanUtils.copyProperties(productInfoList.get(i1), productVO);
+                    BeanUtils.copyProperties(aProductInfoList, productVO);
                     productVOList.add(productVO);
                 }
             }

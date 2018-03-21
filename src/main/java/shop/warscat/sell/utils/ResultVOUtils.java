@@ -1,6 +1,6 @@
 package shop.warscat.sell.utils;
 
-import shop.warscat.sell.VO.ResultVO;
+import shop.warscat.sell.vo.ResultVO;
 
 /**
  * Created with IntelliJ IDEA.

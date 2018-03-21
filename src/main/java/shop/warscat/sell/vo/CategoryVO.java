@@ -1,8 +1,7 @@
-package shop.warscat.sell.VO;
+package shop.warscat.sell.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import shop.warscat.sell.model.ProductInfo;
 
 import java.util.List;
 
