@@ -73,5 +73,9 @@ public class OrderServiceImplTest {
 
     @Test
     public void paid() {
+        OrderMaster orderMaster = new OrderMaster();
+        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
+        orderMaster.setOrderId("1521627668954352246");
+        Assert.assertNotEquals(false,service.paid(orderMaster));
     }
 }

@@ -45,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailDao detailDao;
     private final ProductInfoDao productInfoDao;
     private final ProductInfoService productService;
+
     @Autowired
     public OrderServiceImpl(OrderMasterDao dao, OrderDetailDao detailDao, ProductInfoDao productInfoDao, ProductInfoService productService) {
         this.dao = dao;
@@ -66,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
             //每一条订单数据
             Optional<ProductInfo> byId = productInfoDao.findById(orderDetail.getProductId());
             //注入防护
-            if (!byId.isPresent()||byId.get().getProductStatus()==1) {
+            if (!byId.isPresent() || byId.get().getProductStatus() == 1) {
                 throw new SellException(ResultEnum.PRODUCT_NOT_EXIST);
             }
             ProductInfo productInfo = byId.get();
@@ -97,7 +98,7 @@ public class OrderServiceImpl implements OrderService {
         orderMaster.setOrderAmount(orderAmount);
 
         OrderMaster save = dao.save(orderMaster);
-        return orderMaster.getOrderId();
+        return save.getOrderId();
     }
 
     @Override
@@ -108,7 +109,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDTO> orderDTOList = new ArrayList<>();
         for (OrderMaster order : orderList) {
             OrderDTO dto = new OrderDTO();
-            BeanUtils.copyProperties(order,dto);
+            BeanUtils.copyProperties(order, dto);
             //TODO 商品详情List
             orderDTOList.add(dto);
         }
@@ -122,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
         }
-        BeanUtils.copyProperties(byId.get(),dto);
+        BeanUtils.copyProperties(byId.get(), dto);
 
 
         List<OrderDetail> detailList = detailDao.findByOrderId(orderId);
@@ -136,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
     //前台传入参数为openid和订单id
     @Override
     @Transactional
-    public boolean cancel(OrderMaster order) {
+    public Boolean cancel(OrderMaster order) {
         Optional<OrderMaster> byId = dao.findById(order.getOrderId());
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
@@ -152,24 +153,26 @@ public class OrderServiceImpl implements OrderService {
 
         //返回库存
         List<OrderDetail> orderDetailList = detailDao.findByOrderId(order.getOrderId());
-            //为空则抛异常
+        //为空则抛异常
         if (CollectionUtils.isEmpty(orderDetailList)) {
             throw new SellException(ResultEnum.ORDER_DATAIL_EMTRY);
         }
         List<CartDTO> proList = new ArrayList<>();
         for (OrderDetail detail : orderDetailList) {
-            CartDTO cartDTO = new CartDTO(detail.getProductId(),detail.getProductQuantity());
+            CartDTO cartDTO = new CartDTO(detail.getProductId(), detail.getProductQuantity());
             proList.add(cartDTO);
         }
         productService.increaseStock(proList);
 
-        //TODO 退款功能
+        //TODO 退款功能（if已经付款）
         dao.save(findOrder);
         return true;
     }
 
+    //前台传入参数为openid和订单id
     @Override
-    public boolean finish(OrderMaster order) {
+    @Transactional
+    public Boolean finish(OrderMaster order) {
         Optional<OrderMaster> byId = dao.findById(order.getOrderId());
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
@@ -187,8 +190,29 @@ public class OrderServiceImpl implements OrderService {
         return true;
     }
 
+    //前台传入参数为openid和订单id
+    //支付订单
     @Override
-    public OrderDTO paid(OrderDTO orderDTO) {
-        return null;
+    @Transactional
+    public Boolean paid(OrderMaster order) {
+        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        OrderMaster findOrder = byId.get();
+        //订单状态必须为未付款状态和新创建状态
+        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()))) {
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        if (findOrder.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())) {
+            throw new SellException(ResultEnum.ORDER_YES_PAID);
+        }
+        //微信接口
+
+        //修改
+        findOrder.setOrderStatus(OrderStatusEnum.FINITHED.getCode());
+        findOrder.setPayStatus(PayStatusEnum.SUCCESS.getCode());
+        dao.save(findOrder);
+        return true;
     }
 }
