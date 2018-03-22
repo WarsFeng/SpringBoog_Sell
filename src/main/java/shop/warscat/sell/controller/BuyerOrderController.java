@@ -80,6 +80,7 @@ public class BuyerOrderController {
         Page<OrderDTO> list = service.findList(openid, new PageRequest(page, size));
         List<OrderDTO> orderDTOList = list.getContent();
         System.out.println(orderDTOList.get(0).getUpdateTime());
+        System.out.println();
         return ResultVOUtils.success(orderDTOList);
     }
 
