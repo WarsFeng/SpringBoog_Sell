@@ -51,7 +51,7 @@ public class OrderServiceImplTest {
 
     @Test
     public void findOne() {
-        OrderDTO one = service.findOne("1521627668954352246");
+        OrderDTO one = service.findOne("OPENIDIDIDIDID","1521627668954352246");
         Assert.assertNotEquals(0,one.getOrderDetailList().size());
     }
 

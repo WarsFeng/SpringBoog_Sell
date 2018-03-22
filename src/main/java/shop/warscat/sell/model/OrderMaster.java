@@ -1,5 +1,6 @@
 package shop.warscat.sell.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 import shop.warscat.sell.enums.OrderStatusEnum;
@@ -22,8 +23,8 @@ import java.util.Date;
 @DynamicUpdate
 public class OrderMaster {
 
-    @Id
     /**订单id*/
+    @Id
     private String orderId;
     /**买家名*/
     private String buyerName;
@@ -39,6 +40,7 @@ public class OrderMaster {
     private Integer orderStatus = OrderStatusEnum.NEW.getCode();
     /**支付状态 默认0未支付*/
     private Integer payStatus = PayStatusEnum.WAIT.getCode();
+
 
     private Date createTime;
     private Date updateTime;

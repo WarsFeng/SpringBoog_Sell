@@ -117,11 +117,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO findOne(String orderId) {
+    public OrderDTO findOne(String openid,String orderId) {
         OrderDTO dto = new OrderDTO();
         Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        if (!byId.get().getBuyerOpenid().equals(openid)) {
+            throw new SellException(ResultEnum.RARAM_ERROR);
         }
         BeanUtils.copyProperties(byId.get(), dto);
 

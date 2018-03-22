@@ -2,22 +2,25 @@ package shop.warscat.sell.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import shop.warscat.sell.converter.OrderForm2OrderDTOConverter;
 import shop.warscat.sell.dto.OrderDTO;
 import shop.warscat.sell.enums.ResultEnum;
 import shop.warscat.sell.exception.SellException;
 import shop.warscat.sell.form.OrderForm;
 import shop.warscat.sell.service.OrderService;
+import shop.warscat.sell.utils.ResultVOUtils;
 import shop.warscat.sell.vo.ResultVO;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +37,7 @@ import java.util.Map;
 public class BuyerOrderController {
 
     private final OrderService service;
+
     @Autowired
     public BuyerOrderController(OrderService service) {
         this.service = service;
@@ -42,11 +46,11 @@ public class BuyerOrderController {
     //创建订单
     @PostMapping("/create")
     @Transactional
-    public ResultVO<Map<String,String>> create(@Valid OrderForm orderForm, BindingResult bindingResult){
+    public ResultVO<Map<String, String>> create(@Valid OrderForm orderForm, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            log.error("[创建订单]参数不正确,orderForm{}" ,orderForm);
+            log.error("[创建订单]参数不正确,orderForm{}", orderForm);
             throw new SellException(ResultEnum.RARAM_ERROR.getCode()
-                    ,bindingResult.getFieldError().getDefaultMessage());
+                    , bindingResult.getFieldError().getDefaultMessage());
         }
         OrderDTO dto = OrderForm2OrderDTOConverter.converter(orderForm);
         if (CollectionUtils.isEmpty(dto.getOrderDetailList())) {
@@ -58,19 +62,34 @@ public class BuyerOrderController {
             throw new SellException(ResultEnum.ORDER_CREATE_ERROR);
         }
 
-        ResultVO<Map<String, String>> mapResultVO = new ResultVO<>();
 
-        mapResultVO.setCode(0);
-        mapResultVO.setMsg("成功");
         HashMap<String, String> data = new HashMap<>();
-        data.put("orderId",orderId);
-        mapResultVO.setData(data);
-        return mapResultVO;
+        data.put("orderId", orderId);
+        return ResultVOUtils.success(data);
     }
 
     //订单列表
+    @GetMapping("/list")
+    public ResultVO<List<OrderDTO>> list(@RequestParam("openid") String openid
+            , @RequestParam(value = "page", defaultValue = "0") Integer page
+            , @RequestParam(value = "size", defaultValue = "10") Integer size) {
+        if (StringUtils.isEmpty(openid)) {
+            log.error("[买家openId不能为空]OpenId:{}", openid);
+            throw new SellException(ResultEnum.OPENID_EMTRY);
+        }
+        Page<OrderDTO> list = service.findList(openid, new PageRequest(page, size));
+        List<OrderDTO> orderDTOList = list.getContent();
+        System.out.println(orderDTOList.get(0).getUpdateTime());
+        return ResultVOUtils.success(orderDTOList);
+    }
 
     //订单详情
+    @GetMapping("detail")
+    public ResultVO<OrderDTO> detail(@RequestParam("openid") String openid,
+                                     @RequestParam("orderId") String orderId) {
+        OrderDTO orderDTO = service.findOne(openid, orderId);
+        return ResultVOUtils.success(orderDTO);
+    }
 
 
 }

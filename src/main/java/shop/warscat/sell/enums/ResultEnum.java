@@ -15,6 +15,7 @@ public enum ResultEnum {
     RARAM_ERROR(1,"参数不正确"),
     JSON_CONVERTER_ERROR(2,"Json转换错误"),
     ORDER_CREATE_ERROR(3,"订单创建失败"),
+    OPENID_EMTRY(4,"OpenId为空"),
     PRODUCT_NOT_EXIST(10,"商品不存在"),
     PRODUCT_STOCK_ERROR(11,"商品库存不正确"),
     ORDER_NOT_EXIST(12,"订单不存在"),
