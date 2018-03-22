@@ -1,14 +1,19 @@
 package shop.warscat.sell.service.impl;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import shop.warscat.sell.dao.OrderDetailDao;
 import shop.warscat.sell.dao.OrderMasterDao;
 import shop.warscat.sell.dao.ProductInfoDao;
 import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.dto.OrderDTO;
+import shop.warscat.sell.enums.OrderStatusEnum;
+import shop.warscat.sell.enums.PayStatusEnum;
 import shop.warscat.sell.enums.ResultEnum;
 import shop.warscat.sell.exception.SellException;
 import shop.warscat.sell.model.OrderDetail;
@@ -21,6 +26,7 @@ import shop.warscat.sell.utils.KeyUtils;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -95,23 +101,90 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<OrderMaster> findList(String buyerOpenId, Pageable pageable) {
-        return null;
+    public Page<OrderDTO> findList(String buyerOpenId, Pageable pageable) {
+        Page<OrderMaster> orderMasterPage = dao.findByBuyerOpenid(buyerOpenId, pageable);
+        List<OrderMaster> orderList = orderMasterPage.getContent();
+
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+        for (OrderMaster order : orderList) {
+            OrderDTO dto = new OrderDTO();
+            BeanUtils.copyProperties(order,dto);
+            //TODO 商品详情List
+            orderDTOList.add(dto);
+        }
+        return new PageImpl<>(orderDTOList);
     }
 
     @Override
-    public OrderMaster findOne(String orderId) {
-        return null;
+    public OrderDTO findOne(String orderId) {
+        OrderDTO dto = new OrderDTO();
+        Optional<OrderMaster> byId = dao.findById(orderId);
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        BeanUtils.copyProperties(byId.get(),dto);
+
+
+        List<OrderDetail> detailList = detailDao.findByOrderId(orderId);
+        if (CollectionUtils.isEmpty(detailList)) {
+            throw new SellException(ResultEnum.ORDER_DETAIL_NOT_EXIST);
+        }
+        dto.setOrderDetailList(detailList);
+        return dto;
+    }
+
+    //前台传入参数为openid和订单id
+    @Override
+    @Transactional
+    public boolean cancel(OrderMaster order) {
+        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+
+        //订单id的买家id和传入的一样并且订单状态为新下单
+        OrderMaster findOrder = byId.get();
+        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()) && findOrder.getOrderStatus().equals(OrderStatusEnum.NEW.getCode()))) {
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        //修改状态
+        findOrder.setOrderStatus(OrderStatusEnum.CANCEL.getCode());
+
+        //返回库存
+        List<OrderDetail> orderDetailList = detailDao.findByOrderId(order.getOrderId());
+            //为空则抛异常
+        if (CollectionUtils.isEmpty(orderDetailList)) {
+            throw new SellException(ResultEnum.ORDER_DATAIL_EMTRY);
+        }
+        List<CartDTO> proList = new ArrayList<>();
+        for (OrderDetail detail : orderDetailList) {
+            CartDTO cartDTO = new CartDTO(detail.getProductId(),detail.getProductQuantity());
+            proList.add(cartDTO);
+        }
+        productService.increaseStock(proList);
+
+        //TODO 退款功能
+        dao.save(findOrder);
+        return true;
     }
 
     @Override
-    public OrderDTO cancel(OrderDTO orderDTO) {
-        return null;
-    }
-
-    @Override
-    public OrderDTO finish(OrderDTO orderDTO) {
-        return null;
+    public boolean finish(OrderMaster order) {
+        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        //订单id的买家id和传入的一样并且支付状态为新下单
+        OrderMaster findOrder = byId.get();
+        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()))) {
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        if (findOrder.getPayStatus().equals(PayStatusEnum.WAIT.getCode())) {
+            throw new SellException(ResultEnum.ORDER_NOT_PAID);
+        }
+        findOrder.setOrderStatus(OrderStatusEnum.FINITHED.getCode());
+        dao.save(findOrder);
+        return true;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package shop.warscat.sell.utils;
 
-import java.util.Base64;
-import java.util.Date;
 import java.util.Random;
 
 /**
@@ -19,10 +17,10 @@ public class KeyUtils {
      * 生成唯一主键
      * 格式：时间+随机数(6位)
      */
-    public static synchronized String getUniquId(){
+    public static synchronized String getUniquId() {
         String result;
         Random random = new Random();
-        Integer ran = random.nextInt(262144)+262144;
-        return System.currentTimeMillis()+String.valueOf(ran);
+        Integer ran = random.nextInt(262144) + 262144;
+        return System.currentTimeMillis() + String.valueOf(ran);
     }
 }

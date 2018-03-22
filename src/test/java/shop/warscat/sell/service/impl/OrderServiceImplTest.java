@@ -1,13 +1,17 @@
 package shop.warscat.sell.service.impl;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.dto.OrderDTO;
 import shop.warscat.sell.model.OrderDetail;
+import shop.warscat.sell.model.OrderMaster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,18 +45,30 @@ public class OrderServiceImplTest {
 
     @Test
     public void findList() {
+        Page<OrderDTO> orderDTOPage = service.findList("OPENIDIDIDIDID", new PageRequest(0, 5));
+        Assert.assertNotEquals(0, orderDTOPage.getTotalElements());
     }
 
     @Test
     public void findOne() {
+        OrderDTO one = service.findOne("1521627668954352246");
+        Assert.assertNotEquals(0,one.getOrderDetailList().size());
     }
 
     @Test
     public void cancel() {
+        OrderMaster orderMaster = new OrderMaster();
+        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
+        orderMaster.setOrderId("1521627668954352246");
+        Assert.assertNotEquals(false,service.cancel(orderMaster));
     }
 
     @Test
     public void finish() {
+        OrderMaster orderMaster = new OrderMaster();
+        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
+        orderMaster.setOrderId("1521627668954352246");
+        Assert.assertNotEquals(false,service.finish(orderMaster));
     }
 
     @Test
