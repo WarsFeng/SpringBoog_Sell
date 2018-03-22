@@ -84,12 +84,38 @@ public class BuyerOrderController {
     }
 
     //订单详情
-    @GetMapping("detail")
-    public ResultVO<OrderDTO> detail(@RequestParam("openid") String openid,
-                                     @RequestParam("orderId") String orderId) {
+    @GetMapping("/detail")
+    public ResultVO<OrderDTO> detail(@RequestParam("openid") String openid, @RequestParam("orderId") String orderId) {
         OrderDTO orderDTO = service.findOne(openid, orderId);
         return ResultVOUtils.success(orderDTO);
     }
+
+    //取消订单
+    @PostMapping("/cancel")
+    public ResultVO cancel(@RequestParam("openid") String openid, @RequestParam("orderId") String orderId) {
+        if (service.cancel(openid, orderId)) {
+            return ResultVOUtils.success();
+        } else {
+            return ResultVOUtils.error(1,"失败");
+        }
+    }
+
+    //完结订单
+    @PostMapping("/finish")
+    public ResultVO finish(@RequestParam("openid") String openid, @RequestParam("orderId") String orderId){
+        if (service.finish(openid, orderId)){
+            return ResultVOUtils.success();
+        } else {
+            return ResultVOUtils.error(1,"失败");
+        }
+    }
+
+    //支付订单
+    //TODO
+//    @PostMapping("/paid")
+//    public ResultVO paid(){
+//
+//    }
 
 
 }

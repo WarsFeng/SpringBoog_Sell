@@ -57,25 +57,21 @@ public class OrderServiceImplTest {
 
     @Test
     public void cancel() {
-        OrderMaster orderMaster = new OrderMaster();
-        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
-        orderMaster.setOrderId("1521627668954352246");
-        Assert.assertNotEquals(false,service.cancel(orderMaster));
+        String openid = "OPENIDIDIDIDID";
+        String orderId = "1521627668954352246";
+        Assert.assertNotEquals(false,service.cancel(openid,orderId));
     }
 
     @Test
     public void finish() {
-        OrderMaster orderMaster = new OrderMaster();
-        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
-        orderMaster.setOrderId("1521627668954352246");
-        Assert.assertNotEquals(false,service.finish(orderMaster));
+        String openid = "OPENIDIDIDIDID";
+        String orderId = "1521627668954352246";
+        Assert.assertNotEquals(false,service.cancel(openid,orderId));
     }
 
     @Test
     public void paid() {
-        OrderMaster orderMaster = new OrderMaster();
-        orderMaster.setBuyerOpenid("OPENIDIDIDIDID");
-        orderMaster.setOrderId("1521627668954352246");
-        Assert.assertNotEquals(false,service.paid(orderMaster));
-    }
+        String openid = "OPENIDIDIDIDID";
+        String orderId = "1521627668954352246";
+        Assert.assertNotEquals(false,service.cancel(openid,orderId));    }
 }

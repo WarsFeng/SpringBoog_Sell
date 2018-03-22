@@ -140,22 +140,22 @@ public class OrderServiceImpl implements OrderService {
     //前台传入参数为openid和订单id
     @Override
     @Transactional
-    public Boolean cancel(OrderMaster order) {
-        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+    public Boolean cancel(String openid,String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
         }
 
         //订单id的买家id和传入的一样并且订单状态为新下单
         OrderMaster findOrder = byId.get();
-        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()) && findOrder.getOrderStatus().equals(OrderStatusEnum.NEW.getCode()))) {
+        if (!(findOrder.getBuyerOpenid().equals(openid) && findOrder.getOrderStatus().equals(OrderStatusEnum.NEW.getCode()))) {
             throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
         }
         //修改状态
         findOrder.setOrderStatus(OrderStatusEnum.CANCEL.getCode());
 
         //返回库存
-        List<OrderDetail> orderDetailList = detailDao.findByOrderId(order.getOrderId());
+        List<OrderDetail> orderDetailList = detailDao.findByOrderId(orderId);
         //为空则抛异常
         if (CollectionUtils.isEmpty(orderDetailList)) {
             throw new SellException(ResultEnum.ORDER_DATAIL_EMTRY);
@@ -175,14 +175,14 @@ public class OrderServiceImpl implements OrderService {
     //前台传入参数为openid和订单id
     @Override
     @Transactional
-    public Boolean finish(OrderMaster order) {
-        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+    public Boolean finish(String openid,String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
         }
         //订单id的买家id和传入的一样并且支付状态为新下单
         OrderMaster findOrder = byId.get();
-        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()))) {
+        if (!(findOrder.getBuyerOpenid().equals(openid))) {
             throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
         }
         if (findOrder.getPayStatus().equals(PayStatusEnum.WAIT.getCode())) {
@@ -197,14 +197,14 @@ public class OrderServiceImpl implements OrderService {
     //支付订单
     @Override
     @Transactional
-    public Boolean paid(OrderMaster order) {
-        Optional<OrderMaster> byId = dao.findById(order.getOrderId());
+    public Boolean paid(String openid,String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
         }
         OrderMaster findOrder = byId.get();
         //订单状态必须为未付款状态和新创建状态
-        if (!(findOrder.getBuyerOpenid().equals(order.getBuyerOpenid()))) {
+        if (!(findOrder.getBuyerOpenid().equals(openid))) {
             throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
         }
         if (findOrder.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())) {

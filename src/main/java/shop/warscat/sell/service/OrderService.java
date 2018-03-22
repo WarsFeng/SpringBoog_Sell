@@ -24,9 +24,9 @@ public interface OrderService {
     /**查询单个订单*/
     OrderDTO findOne(String openid,String orderId);
     /**取消订单*/
-    Boolean cancel(OrderMaster order);
+    Boolean cancel(String openid,String orderId);
     /**完结订单*/
-    Boolean finish(OrderMaster order);
+    Boolean finish(String openid,String orderId);
     /**支付订单*/
-    Boolean paid(OrderMaster order);
+    Boolean paid(String openid,String orderId);
 }
