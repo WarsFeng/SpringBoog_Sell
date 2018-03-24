@@ -3,6 +3,7 @@ package shop.warscat.sell.controller;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
 import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.common.util.http.URIUtil;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpOAuth2AccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class WecharController {
     public String authorize(@RequestParam("returnUrl") String returnUrl) {
         String redirectUrl = wxMpService.oauth2buildAuthorizationUrl
                 (projectUrlConfig.getWechatMpAuthorize() + "/sell/wechat/userInfo"
-                        , WxConsts.OAuth2Scope.SNSAPI_BASE, returnUrl);
+                        , WxConsts.OAuth2Scope.SNSAPI_BASE, URIUtil.encodeURIComponent(returnUrl));
         log.info("[重定向的Url]：{}",redirectUrl);
         log.info("[Return的Url]：{}",returnUrl);
         return "redirect:" + redirectUrl;
@@ -58,6 +59,8 @@ public class WecharController {
         }
         //获取用户OpenId
         String openId = wxMpOAuth2AccessToken.getOpenId();
-        return "redirect:"+ returnUrl+"?openid=" +openId;
+        String s = "redirect:" + returnUrl + "?openid=" + openId;
+        System.out.println(s);
+        return s;
     }
 }
