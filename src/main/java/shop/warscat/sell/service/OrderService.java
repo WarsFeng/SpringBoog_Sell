@@ -23,6 +23,8 @@ public interface OrderService {
     Page<OrderDTO> findList(String buyerOpenId, Pageable pageable);
     /**查询单个订单*/
     OrderDTO findOne(String openid,String orderId);
+    /**Id查询单个订单*/
+    OrderDTO findOneById(String orderId);
     /**取消订单*/
     Boolean cancel(String openid,String orderId);
     /**完结订单*/

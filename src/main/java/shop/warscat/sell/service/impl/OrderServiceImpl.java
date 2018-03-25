@@ -137,6 +137,22 @@ public class OrderServiceImpl implements OrderService {
         return dto;
     }
 
+    @Override
+    public OrderDTO findOneById(String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
+        OrderDTO dto = new OrderDTO();
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        BeanUtils.copyProperties(byId.get(), dto);
+        List<OrderDetail> detailList = detailDao.findByOrderId(orderId);
+        if (CollectionUtils.isEmpty(detailList)) {
+            throw new SellException(ResultEnum.ORDER_DETAIL_NOT_EXIST);
+        }
+        dto.setOrderDetailList(detailList);
+        return dto;
+    }
+
     //前台传入参数为openid和订单id
     @Override
     @Transactional
