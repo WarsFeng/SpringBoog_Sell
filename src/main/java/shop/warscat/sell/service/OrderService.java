@@ -1,5 +1,6 @@
 package shop.warscat.sell.service;
 
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import shop.warscat.sell.dto.OrderDTO;
@@ -30,5 +31,5 @@ public interface OrderService {
     /**完结订单*/
     Boolean finish(String openid,String orderId);
     /**支付订单*/
-    Boolean paid(String openid,String orderId);
+    Boolean paid(WxPayOrderNotifyResult result, String orderId);
 }

@@ -1,5 +1,8 @@
 package shop.warscat.sell.service.impl;
 
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.request.WxPayBaseRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
  * Date: 2018-03-21
  * Time: 14:15
  */
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -213,23 +217,27 @@ public class OrderServiceImpl implements OrderService {
     //支付订单
     @Override
     @Transactional
-    public Boolean paid(String openid,String orderId) {
+    public Boolean paid(WxPayOrderNotifyResult result, String orderId) {
         Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
         }
         OrderMaster findOrder = byId.get();
         //订单状态必须为未付款状态和新创建状态
-        if (!(findOrder.getBuyerOpenid().equals(openid))) {
-            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
-        }
         if (findOrder.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())) {
             throw new SellException(ResultEnum.ORDER_YES_PAID);
         }
-        //微信接口
-
+        //校验微信返回报文内金额是否正确
+        Integer resultTotalFee = result.getTotalFee();
+        Integer orderTotalFee = WxPayBaseRequest.yuanToFee(findOrder.getOrderAmount().toString());
+        if (!resultTotalFee.equals(orderTotalFee)) {
+            log.error("[微信][支付]订单Id{}入款金额{},实际金额{}",orderId,resultTotalFee,orderTotalFee);
+            throw new SellException(ResultEnum.WX_INPUT_FEE_ERROR);
+        }
         //修改
-        findOrder.setOrderStatus(OrderStatusEnum.FINITHED.getCode());
+        //!支付订单不能修改订单状态 只能修改订单支付状态
+        // 订单状态是商家修改的!
+//        findOrder.setOrderStatus(OrderStatusEnum.FINITHED.getCode());
         findOrder.setPayStatus(PayStatusEnum.SUCCESS.getCode());
         dao.save(findOrder);
         return true;

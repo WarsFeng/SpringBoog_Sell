@@ -1,5 +1,7 @@
 package shop.warscat.sell.service;
 
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import shop.warscat.sell.dto.OrderDTO;
 
 /**
@@ -12,5 +14,7 @@ import shop.warscat.sell.dto.OrderDTO;
 
 public interface PayService {
 
-    public boolean create(OrderDTO dto);
+    WxPayMpOrderResult create(OrderDTO dto);
+
+    WxPayOrderNotifyResult notify(String notifyData);
 }
