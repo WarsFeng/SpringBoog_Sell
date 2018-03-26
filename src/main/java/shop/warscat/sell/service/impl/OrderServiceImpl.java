@@ -2,14 +2,17 @@ package shop.warscat.sell.service.impl;
 
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.request.WxPayBaseRequest;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import shop.warscat.sell.converter.OrderMaster2OrderDTOConverter;
 import shop.warscat.sell.dao.OrderDetailDao;
 import shop.warscat.sell.dao.OrderMasterDao;
 import shop.warscat.sell.dao.ProductInfoDao;
@@ -23,9 +26,11 @@ import shop.warscat.sell.model.OrderDetail;
 import shop.warscat.sell.model.OrderMaster;
 import shop.warscat.sell.model.ProductInfo;
 import shop.warscat.sell.service.OrderService;
+import shop.warscat.sell.service.PayService;
 import shop.warscat.sell.service.ProductInfoService;
 import shop.warscat.sell.utils.KeyUtils;
 
+import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -49,13 +54,16 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailDao detailDao;
     private final ProductInfoDao productInfoDao;
     private final ProductInfoService productService;
+    private final PayService payService;
 
     @Autowired
-    public OrderServiceImpl(OrderMasterDao dao, OrderDetailDao detailDao, ProductInfoDao productInfoDao, ProductInfoService productService) {
+    public OrderServiceImpl(OrderMasterDao dao, OrderDetailDao detailDao, ProductInfoDao productInfoDao
+            , ProductInfoService productService, @Lazy PayService payService) {
         this.dao = dao;
         this.detailDao = detailDao;
         this.productInfoDao = productInfoDao;
         this.productService = productService;
+        this.payService = payService;
     }
 
     @Override
@@ -106,18 +114,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<OrderDTO> findList(String buyerOpenId, Pageable pageable) {
+    public Page<OrderDTO> findListByOpenid(String buyerOpenId, Pageable pageable) {
         Page<OrderMaster> orderMasterPage = dao.findByBuyerOpenid(buyerOpenId, pageable);
         List<OrderMaster> orderList = orderMasterPage.getContent();
-
-        List<OrderDTO> orderDTOList = new ArrayList<>();
-        for (OrderMaster order : orderList) {
-            OrderDTO dto = new OrderDTO();
-            BeanUtils.copyProperties(order, dto);
-            //TODO 商品详情List
-            orderDTOList.add(dto);
-        }
+        //转换
+        List<OrderDTO> orderDTOList = OrderMaster2OrderDTOConverter.converter(orderList);
         return new PageImpl<>(orderDTOList);
+    }
+
+    @Override
+    public Page<OrderMaster> findList(Pageable pageable) {
+        return dao.findAll(pageable);
     }
 
     @Override
@@ -187,7 +194,14 @@ public class OrderServiceImpl implements OrderService {
         }
         productService.increaseStock(proList);
 
-        //TODO 退款功能（if已经付款）
+        //退款功能
+        if (findOrder.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())) {
+            OrderDTO dto = new OrderDTO();
+            dto.setOrderId(orderId);
+            WxPayRefundResult refund = payService.refund(dto);
+            log.info("[微信][取消订单退款]Response:{}",refund);
+        }
+
         dao.save(findOrder);
         return true;
     }

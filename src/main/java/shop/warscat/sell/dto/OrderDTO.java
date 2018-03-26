@@ -1,15 +1,18 @@
 package shop.warscat.sell.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import shop.warscat.sell.enums.OrderStatusEnum;
 import shop.warscat.sell.enums.PayStatusEnum;
 import shop.warscat.sell.model.OrderDetail;
+import shop.warscat.sell.utils.EnumUtils;
 import shop.warscat.sell.utils.seriallazer.Date2LongSeriallazer;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created with IntelliJ IDEA.
@@ -43,6 +46,14 @@ public class OrderDTO {
     @JsonSerialize(using = Date2LongSeriallazer.class)
     private Date updateTime;
 
-
     private List<OrderDetail> orderDetailList;
+
+    @JsonIgnore
+    public String getOrderStatusEnum(){
+        return Objects.requireNonNull(EnumUtils.getByCode(orderStatus, OrderStatusEnum.class)).getMsg();
+    }
+    @JsonIgnore
+    public String getPayStatusEnum(){
+        return Objects.requireNonNull(EnumUtils.getByCode(payStatus, PayStatusEnum.class)).getMsg();
+    }
 }

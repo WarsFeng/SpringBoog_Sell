@@ -2,6 +2,7 @@ package shop.warscat.sell.service;
 
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import shop.warscat.sell.dto.OrderDTO;
 
 /**
@@ -17,4 +18,7 @@ public interface PayService {
     WxPayMpOrderResult create(OrderDTO dto);
 
     WxPayOrderNotifyResult notify(String notifyData);
+
+    //退款
+    WxPayRefundResult refund(OrderDTO dto);
 }

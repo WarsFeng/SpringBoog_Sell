@@ -21,7 +21,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -46,7 +45,7 @@ public class BuyerOrderController {
     //创建订单
     @PostMapping("/create")
     @Transactional
-    public ResultVO<Map<String, String>> create(@Valid OrderForm orderForm, BindingResult bindingResult) {
+    public ResultVO create(@Valid OrderForm orderForm, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             log.error("[创建订单]参数不正确,orderForm{}", orderForm);
             throw new SellException(ResultEnum.RARAM_ERROR.getCode()
@@ -70,14 +69,14 @@ public class BuyerOrderController {
 
     //订单列表
     @GetMapping("/list")
-    public ResultVO<List<OrderDTO>> list(@RequestParam("openid") String openid
+    public ResultVO list(@RequestParam("openid") String openid
             , @RequestParam(value = "page", defaultValue = "0") Integer page
             , @RequestParam(value = "size", defaultValue = "10") Integer size) {
         if (StringUtils.isEmpty(openid)) {
             log.error("[买家openId不能为空]OpenId:{}", openid);
             throw new SellException(ResultEnum.OPENID_EMTRY);
         }
-        Page<OrderDTO> list = service.findList(openid, new PageRequest(page, size));
+        Page<OrderDTO> list = service.findListByOpenid(openid, PageRequest.of(page, size));
         List<OrderDTO> orderDTOList = list.getContent();
         System.out.println(orderDTOList.get(0).getUpdateTime());
         System.out.println();
@@ -86,7 +85,7 @@ public class BuyerOrderController {
 
     //订单详情
     @GetMapping("/detail")
-    public ResultVO<OrderDTO> detail(@RequestParam("openid") String openid, @RequestParam("orderId") String orderId) {
+    public ResultVO detail(@RequestParam("openid") String openid, @RequestParam("orderId") String orderId) {
         OrderDTO orderDTO = service.findOne(openid, orderId);
         return ResultVOUtils.success(orderDTO);
     }
@@ -110,13 +109,5 @@ public class BuyerOrderController {
             return ResultVOUtils.error(1,"失败");
         }
     }
-
-    //支付订单
-    //TODO
-//    @PostMapping("/paid")
-//    public ResultVO paid(){
-//
-//    }
-
 
 }

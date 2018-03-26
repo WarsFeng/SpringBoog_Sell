@@ -20,11 +20,23 @@ public interface OrderService {
      * @return orderId
      * */
     String create(OrderDTO orderDTO);
-    /**查询订单列表*/
-    Page<OrderDTO> findList(String buyerOpenId, Pageable pageable);
+    /**分页查询单个用户的订单列表*/
+    Page<OrderDTO> findListByOpenid(String buyerOpenId, Pageable pageable);
+
+    /**
+     * 分页查询全部订单列表
+     * @param pageable 分页
+     * @return 所有订单列表分页
+     */
+    Page<OrderMaster> findList(Pageable pageable);
+
     /**查询单个订单*/
     OrderDTO findOne(String openid,String orderId);
-    /**Id查询单个订单*/
+
+    /**
+     * @param orderId 订单Id
+     * @return 校验订单和订单详情是否存在并返回
+     */
     OrderDTO findOneById(String orderId);
     /**取消订单*/
     Boolean cancel(String openid,String orderId);

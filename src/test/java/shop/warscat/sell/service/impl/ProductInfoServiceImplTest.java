@@ -33,7 +33,7 @@ public class ProductInfoServiceImplTest {
 
     @Test
     public void findAll() {
-        Page<ProductInfo> page = service.findAll(new PageRequest(0, 1));
+        Page<ProductInfo> page = service.findAll(PageRequest.of(0, 1));
         System.out.println(page.getTotalElements());
         System.out.println(page.getContent().get(0).getProductName());
 //        Assert.assertNotEquals(0, page);

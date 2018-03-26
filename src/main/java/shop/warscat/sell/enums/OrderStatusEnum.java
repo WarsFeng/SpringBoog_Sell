@@ -11,11 +11,10 @@ import lombok.Getter;
  * Time: 04:39
  */
 @Getter
-public enum OrderStatusEnum {
-    NEW(0,"新订单"),
-    FINITHED(1,"完结"),
-    CANCEL(2,"已取消")
-    ;
+public enum OrderStatusEnum implements CodeEnum {
+    NEW(0, "新订单"),
+    FINITHED(1, "完结"),
+    CANCEL(2, "已取消");
 
     private Integer code;
     private String msg;

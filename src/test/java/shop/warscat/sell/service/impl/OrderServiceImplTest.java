@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import shop.warscat.sell.dto.CartDTO;
 import shop.warscat.sell.dto.OrderDTO;
@@ -44,8 +45,8 @@ public class OrderServiceImplTest {
     }
 
     @Test
-    public void findList() {
-        Page<OrderDTO> orderDTOPage = service.findList("OPENIDIDIDIDID", new PageRequest(0, 5));
+    public void findListByOpenid() {
+        Page<OrderDTO> orderDTOPage = service.findListByOpenid("OPENIDIDIDIDID", PageRequest.of(0, 5));
         Assert.assertNotEquals(0, orderDTOPage.getTotalElements());
     }
 
@@ -74,5 +75,17 @@ public class OrderServiceImplTest {
         String openid = "OPENIDIDIDIDID";
         String orderId = "1521627668954352246";
 //        Assert.assertNotEquals(false,service.cancel(openid,orderId));
+    }
+
+    @Test
+    public void findList() {
+//        Page<OrderDTO> list = service.findList(PageRequest.of(0,10));
+//        for (OrderDTO dto : list.getContent()) {
+//            System.out.println(dto);
+//        }
+    }
+
+    @Test
+    public void findOneById() {
     }
 }

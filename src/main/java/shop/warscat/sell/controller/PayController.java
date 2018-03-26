@@ -52,6 +52,6 @@ public class PayController {
     @PostMapping("/notify")
     public ModelAndView notify(@RequestBody String notifyData) {
         WxPayOrderNotifyResult notifyResult = payService.notify(notifyData);
-        return new ModelAndView("/pay/success");
+        return new ModelAndView("pay/success");
     }
 }

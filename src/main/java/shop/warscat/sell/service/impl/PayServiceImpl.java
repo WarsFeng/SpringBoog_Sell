@@ -3,7 +3,9 @@ package shop.warscat.sell.service.impl;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.WxPayBaseRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +69,7 @@ public class PayServiceImpl implements PayService {
         try {
             wxPayOrderNotifyResult = wxPayService.parseOrderNotifyResult(notifyData);
         } catch (WxPayException e) {
-            log.error("微信异步通知解析失败！原因:{}", e.getMessage());
+            log.error("[微信][异步通知解析]！原因:{}", e.getMessage());
             throw new SellException(ResultEnum.PAY_AJAX_ERROR);
         }
         //修改订单状态
@@ -76,6 +78,29 @@ public class PayServiceImpl implements PayService {
         log.info("[微信][异步通知]订单号:{},用户openid：{}",orderId,openid);
         orderService.paid(wxPayOrderNotifyResult,orderId);
         return wxPayOrderNotifyResult;
+    }
+
+    //退款
+    @Override
+    public WxPayRefundResult refund(OrderDTO dto) {
+        OrderDTO oneById = orderService.findOneById(dto.getOrderId());
+        //和微信传入信息对比金额
+        WxPayRefundRequest refundRequest = WxPayRefundRequest.newBuilder().build();
+        refundRequest.setOutTradeNo(oneById.getOrderId());
+        refundRequest.setOutRefundNo(oneById.getOrderId());
+        Integer totalFee = WxPayBaseRequest.yuanToFee(oneById.getOrderAmount().toString());
+        refundRequest.setTotalFee(totalFee);
+        refundRequest.setRefundFee(totalFee);
+        log.info("[微信][退款]Request:{}",refundRequest);
+        //发起退款请求
+        WxPayRefundResult refundResult;
+        try {
+            refundResult = wxPayService.refund(refundRequest);
+        } catch (WxPayException e) {
+            log.error("[微信][退款]原因{}",e.getMessage());
+            throw new SellException(ResultEnum.WX_REFUND_ERROR);
+        }
+        return refundResult;
     }
 
 
