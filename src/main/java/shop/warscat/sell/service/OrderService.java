@@ -40,8 +40,16 @@ public interface OrderService {
     OrderDTO findOneById(String orderId);
     /**取消订单*/
     Boolean cancel(String openid,String orderId);
+
+    /**
+     * 卖家取消订单
+     * @param orderId 订单Id
+     * @return 是否成功
+     */
+    Boolean adminCancel(String orderId);
     /**完结订单*/
     Boolean finish(String openid,String orderId);
+    Boolean adminFinish(String orderId);
     /**支付订单*/
     Boolean paid(WxPayOrderNotifyResult result, String orderId);
 }

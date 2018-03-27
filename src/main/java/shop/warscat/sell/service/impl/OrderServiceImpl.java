@@ -128,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO findOne(String openid,String orderId) {
+    public OrderDTO findOne(String openid, String orderId) {
         OrderDTO dto = new OrderDTO();
         Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
@@ -167,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
     //前台传入参数为openid和订单id
     @Override
     @Transactional
-    public Boolean cancel(String openid,String orderId) {
+    public Boolean cancel(String openid, String orderId) {
         Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
@@ -175,9 +175,10 @@ public class OrderServiceImpl implements OrderService {
 
         //订单id的买家id和传入的一样并且订单状态为新下单
         OrderMaster findOrder = byId.get();
-        if (!(findOrder.getBuyerOpenid().equals(openid) && findOrder.getOrderStatus().equals(OrderStatusEnum.NEW.getCode()))) {
+        if (!(findOrder.getBuyerOpenid().equals(openid) || !(findOrder.getOrderStatus() == 0))) {
             throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
         }
+
         //修改状态
         findOrder.setOrderStatus(OrderStatusEnum.CANCEL.getCode());
 
@@ -199,7 +200,44 @@ public class OrderServiceImpl implements OrderService {
             OrderDTO dto = new OrderDTO();
             dto.setOrderId(orderId);
             WxPayRefundResult refund = payService.refund(dto);
-            log.info("[微信][取消订单退款]Response:{}",refund);
+            log.info("[微信][取消订单退款]Response:{}", refund);
+        }
+
+        dao.save(findOrder);
+        return true;
+    }
+
+    @Override
+    public Boolean adminCancel(String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        OrderMaster findOrder = byId.get();
+        if (findOrder.getOrderStatus() != 0) {
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }//修改状态
+        findOrder.setOrderStatus(OrderStatusEnum.CANCEL.getCode());
+
+        //返回库存
+        List<OrderDetail> orderDetailList = detailDao.findByOrderId(orderId);
+        //为空则抛异常
+        if (CollectionUtils.isEmpty(orderDetailList)) {
+            throw new SellException(ResultEnum.ORDER_DATAIL_EMTRY);
+        }
+        List<CartDTO> proList = new ArrayList<>();
+        for (OrderDetail detail : orderDetailList) {
+            CartDTO cartDTO = new CartDTO(detail.getProductId(), detail.getProductQuantity());
+            proList.add(cartDTO);
+        }
+        productService.increaseStock(proList);
+
+        //退款功能
+        if (findOrder.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())) {
+            OrderDTO dto = new OrderDTO();
+            dto.setOrderId(orderId);
+            WxPayRefundResult refund = payService.refund(dto);
+            log.info("[微信][取消订单退款]Response:{}", refund);
         }
 
         dao.save(findOrder);
@@ -209,7 +247,7 @@ public class OrderServiceImpl implements OrderService {
     //前台传入参数为openid和订单id
     @Override
     @Transactional
-    public Boolean finish(String openid,String orderId) {
+    public Boolean finish(String openid, String orderId) {
         Optional<OrderMaster> byId = dao.findById(orderId);
         if (!byId.isPresent()) {
             throw new SellException(ResultEnum.ORDER_NOT_EXIST);
@@ -219,6 +257,22 @@ public class OrderServiceImpl implements OrderService {
         if (!(findOrder.getBuyerOpenid().equals(openid))) {
             throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
         }
+        if (findOrder.getPayStatus().equals(PayStatusEnum.WAIT.getCode())) {
+            throw new SellException(ResultEnum.ORDER_NOT_PAID);
+        }
+        findOrder.setOrderStatus(OrderStatusEnum.FINITHED.getCode());
+        dao.save(findOrder);
+        return true;
+    }
+
+    @Override
+    public Boolean adminFinish(String orderId) {
+        Optional<OrderMaster> byId = dao.findById(orderId);
+        if (!byId.isPresent()) {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        //订单id的买家id和传入的一样并且支付状态为新下单
+        OrderMaster findOrder = byId.get();
         if (findOrder.getPayStatus().equals(PayStatusEnum.WAIT.getCode())) {
             throw new SellException(ResultEnum.ORDER_NOT_PAID);
         }
@@ -245,7 +299,7 @@ public class OrderServiceImpl implements OrderService {
         Integer resultTotalFee = result.getTotalFee();
         Integer orderTotalFee = WxPayBaseRequest.yuanToFee(findOrder.getOrderAmount().toString());
         if (!resultTotalFee.equals(orderTotalFee)) {
-            log.error("[微信][支付]订单Id{}入款金额{},实际金额{}",orderId,resultTotalFee,orderTotalFee);
+            log.error("[微信][支付]订单Id{}入款金额{},实际金额{}", orderId, resultTotalFee, orderTotalFee);
             throw new SellException(ResultEnum.WX_INPUT_FEE_ERROR);
         }
         //修改

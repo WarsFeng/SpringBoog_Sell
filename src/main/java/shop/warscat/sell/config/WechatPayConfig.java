@@ -39,6 +39,7 @@ public class WechatPayConfig {
         wxPayConfig.setMchKey(wechatAccountConfig.getMchKey());
         wxPayConfig.setNotifyUrl(wechatAccountConfig.getNotifyUrl());
         wxPayConfig.setTradeType("JSAPI");
+        wxPayConfig.setKeyPath(wechatAccountConfig.getKeyPath());
         return wxPayConfig;
     }
 }

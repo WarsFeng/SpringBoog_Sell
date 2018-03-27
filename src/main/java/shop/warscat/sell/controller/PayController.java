@@ -52,6 +52,7 @@ public class PayController {
     @PostMapping("/notify")
     public ModelAndView notify(@RequestBody String notifyData) {
         WxPayOrderNotifyResult notifyResult = payService.notify(notifyData);
+        log.info("[微信支付][异步通知]返回数据：{}",notifyResult);
         return new ModelAndView("pay/success");
     }
 }

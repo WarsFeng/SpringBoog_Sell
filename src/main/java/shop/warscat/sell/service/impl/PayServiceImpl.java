@@ -17,6 +17,8 @@ import shop.warscat.sell.exception.SellException;
 import shop.warscat.sell.service.OrderService;
 import shop.warscat.sell.service.PayService;
 
+import javax.transaction.Transactional;
+
 /**
  * Created with IntelliJ IDEA.
  * Description:
@@ -45,7 +47,7 @@ public class PayServiceImpl implements PayService {
             throw new SellException(ResultEnum.ORDER_YES_PAID);
         }
         WxPayUnifiedOrderRequest request = new WxPayUnifiedOrderRequest();
-        request.setBody("啦啦啦订单");
+        request.setBody("外卖订单");
         request.setOutTradeNo(dto.getOrderId());
         request.setTotalFee(WxPayBaseRequest.yuanToFee(dto.getOrderAmount().toString()));
         request.setSpbillCreateIp("8.8.8.8");
@@ -64,6 +66,7 @@ public class PayServiceImpl implements PayService {
     }
 
     @Override
+    @Transactional
     public WxPayOrderNotifyResult notify(String notifyData) {
         WxPayOrderNotifyResult wxPayOrderNotifyResult;
         try {
@@ -82,6 +85,7 @@ public class PayServiceImpl implements PayService {
 
     //退款
     @Override
+    @Transactional
     public WxPayRefundResult refund(OrderDTO dto) {
         OrderDTO oneById = orderService.findOneById(dto.getOrderId());
         //和微信传入信息对比金额
