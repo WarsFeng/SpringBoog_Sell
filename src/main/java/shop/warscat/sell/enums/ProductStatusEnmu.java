@@ -10,7 +10,7 @@ import lombok.Getter;
  * Time: 00:50
  */
 @Getter
-public enum ProductStatusEnmu {
+public enum ProductStatusEnmu implements CodeEnum {
 
     UP(0,"上架"),
     DOWN(1,"下架"),

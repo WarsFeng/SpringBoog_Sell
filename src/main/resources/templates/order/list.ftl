@@ -45,33 +45,7 @@
                         </tbody>
                     </table>
                 <#--分页-->
-                    <nav style="text-align: center">
-                        <ul class="pagination">
-                        <#--上一页-->
-                    <#if curentPage lte 1>
-                        <li class="page-item disabled"><a class="page-link"
-                                                          href="#">上一页</a>
-                        </li>
-                    <#else>
-                        <li class="page-item"><a class="page-link"
-                                                 href="/sell/seller/order/list?page=${curentPage-1}&size=${pageSize}">上一页</a>
-                        </li>
-                    </#if>
-                        <#--分页栏-->
-                    <#import "/order/paging.ftl" as paging/>
-                    <@paging.paging curentPage=curentPage totalPage=totalPage showPages=10/>
-                        <#--下一页-->
-                    <#if curentPage gte totalPage>
-                        <li class="page-item disabled"><a class="page-link"
-                                                          href="#">下一页</a>
-                        </li>
-                    <#else>
-                        <li class="page-item"><a class="page-link"
-                                                 href="/sell/seller/order/list?page=${curentPage+1}&size=${pageSize}">下一页</a>
-                        </li>
-                    </#if>
-                        </ul>
-                    </nav>
+                    <#include "../order/paging.ftl">
                 </div>
 
             </div>

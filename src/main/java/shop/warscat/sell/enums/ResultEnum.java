@@ -32,7 +32,9 @@ public enum ResultEnum {
     ORDER_YES_PAID(17,"订单支付状态不正确"),
     ORDER_SAVE_ERROR(18,"订单保存错误"),
     WX_WEB_ERROR(19,"微信网页授权错误"),
-    FINISH(20,"订单完结！")
+    FINISH(20,"订单完结！"),
+    UP_SUCCES(21,"商品上架成功！"),
+    DOWN_SUCCES(22,"商品下架成功！")
     ;
 
     private Integer code;

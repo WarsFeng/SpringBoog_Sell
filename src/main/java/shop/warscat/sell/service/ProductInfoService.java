@@ -37,4 +37,7 @@ public interface ProductInfoService {
 
     void descreaseStock(List<CartDTO> proList);
 
+    void upProduct(String productId);
+
+    void downProduct(String productId);
 }

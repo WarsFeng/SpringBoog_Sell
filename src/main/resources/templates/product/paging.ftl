@@ -7,7 +7,7 @@
             </li>
         <#else>
             <li class="page-item"><a class="page-link"
-                                     href="/sell/seller/order/list?page=${curentPage-1}&size=${pageSize}">上一页</a>
+                                     href="/sell/seller/product/list?page=${curentPage-1}&size=${pageSize}">上一页</a>
             </li>
         </#if>
     <#--分页栏-->
@@ -22,7 +22,7 @@
                         <#else>
                         <li class="page-item">
                             <a class="page-link"
-                               href="/sell/seller/order/list?page=${index}&size=${pageSize}">${index}</a>
+                               href="/sell/seller/product/list?page=${index}&size=${pageSize}">${index}</a>
                         </li>
                         </#if>
                     </#list>
@@ -35,7 +35,7 @@
                         <#else>
                             <li class="page-item">
                                 <a class="page-link"
-                                   href="/sell/seller/order/list?page=${index}&size=${pageSize}">${index}</a>
+                                   href="/sell/seller/product/list?page=${index}&size=${pageSize}">${index}</a>
                             </li>
                         </#if>
                     </#list>
@@ -49,7 +49,7 @@
                     <#else>
                     <li class="page-item">
                         <a class="page-link"
-                           href="/sell/seller/order/list?page=${index}&size=${pageSize}">${index}</a>
+                           href="/sell/seller/product/list?page=${index}&size=${pageSize}">${index}</a>
                     </li>
                     </#if>
                 </#list>
@@ -63,7 +63,7 @@
                 <#else>
             <li class="page-item">
                 <a class="page-link"
-                   href="/sell/seller/order/list?page=${index}&size=${pageSize}">${index}</a>
+                   href="/sell/seller/product/list?page=${index}&size=${pageSize}">${index}</a>
             </li>
                 </#if>
             </#list>
@@ -75,7 +75,7 @@
             </li>
         <#else>
             <li class="page-item"><a class="page-link"
-                                     href="/sell/seller/order/list?page=${curentPage+1}&size=${pageSize}">下一页</a>
+                                     href="/sell/seller/product/list?page=${curentPage+1}&size=${pageSize}">下一页</a>
             </li>
         </#if>
     </ul>

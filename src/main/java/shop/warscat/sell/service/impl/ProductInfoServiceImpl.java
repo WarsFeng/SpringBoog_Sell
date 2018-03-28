@@ -1,5 +1,6 @@
 package shop.warscat.sell.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import java.util.Optional;
  * Date: 2018-03-21
  * Time: 00:45
  */
+@Slf4j
 @Service
 public class ProductInfoServiceImpl implements ProductInfoService {
 
@@ -75,5 +77,30 @@ public class ProductInfoServiceImpl implements ProductInfoService {
             productInfo.setProductStock(newProductStock);
             dao.save(productInfo);
         }
+    }
+
+    //上架商品
+    @Override
+    public void upProduct(String productId){
+        Optional<ProductInfo> byId = dao.findById(productId);
+        if (!byId.isPresent()) {
+            log.error("[商品][查询]商品不存在id:{}",productId);
+            throw new SellException(ResultEnum.PRODUCT_NOT_EXIST);
+        }
+        ProductInfo findProduct = byId.get();
+        findProduct.setProductStatus(ProductStatusEnmu.UP.getCode());
+        dao.save(findProduct);
+    }
+
+    @Override
+    public void downProduct(String productId){
+        Optional<ProductInfo> byId = dao.findById(productId);
+        if (!byId.isPresent()) {
+            log.error("[商品][查询]商品不存在id:{}",productId);
+            throw new SellException(ResultEnum.PRODUCT_NOT_EXIST);
+        }
+        ProductInfo findProduct = byId.get();
+        findProduct.setProductStatus(ProductStatusEnmu.DOWN.getCode());
+        dao.save(findProduct);
     }
 }

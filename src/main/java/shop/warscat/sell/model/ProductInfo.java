@@ -1,10 +1,15 @@
 package shop.warscat.sell.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import shop.warscat.sell.enums.ProductStatusEnmu;
+import shop.warscat.sell.utils.EnumUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * Created with IntelliJ IDEA.
@@ -40,5 +45,13 @@ public class ProductInfo {
 
     /**类目编号*/
     private Integer categoryType;
+
+    private Date createTime;
+    private Date updateTime;
+
+    @JsonIgnore
+    public String getProductStatusEnum(){
+        return Objects.requireNonNull(EnumUtils.getByCode(productStatus, ProductStatusEnmu.class)).getMassage();
+    }
 
 }
