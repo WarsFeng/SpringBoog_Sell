@@ -76,19 +76,22 @@ public class SellerCategotyController {
             map.put("url", "/sell/seller/category/index");
             return new ModelAndView("common/error", map);
         }
-        ProductCategory category = categoryService.findOneById(categoryForm.getCategoryId());
+        ProductCategory category = new ProductCategory();
+        if (categoryForm.getCategoryId() != null) {
+            category = categoryService.findOneById(categoryForm.getCategoryId());
+        }
         //id主键自增不需要
         BeanUtils.copyProperties(categoryForm, category);
         try {
             categoryService.save(category);
         } catch (Exception e) {
-            log.error("[分类][保存]失败,msg:{}",e.getMessage());
-            map.put("msg",e.getMessage());
-            map.put("url","/sell/seller/category/list");
-            return new ModelAndView("common/error",map);
+            log.error("[分类][保存]失败,msg:{}", e.getMessage());
+            map.put("msg", e.getMessage());
+            map.put("url", "/sell/seller/category/list");
+            return new ModelAndView("common/error", map);
         }
-        map.put("msg",ResultEnum.CATEGORY_ADD_SUCCES.getMessage());
-        map.put("url","/sell/seller/category/list");
-        return new ModelAndView("common/succes",map);
+        map.put("msg", ResultEnum.CATEGORY_ADD_SUCCES.getMessage());
+        map.put("url", "/sell/seller/category/list");
+        return new ModelAndView("common/succes", map);
     }
 }

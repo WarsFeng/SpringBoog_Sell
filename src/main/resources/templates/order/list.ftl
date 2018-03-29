@@ -52,6 +52,17 @@
         </div>
     </div>
 </div>
+<script>
+    var websocket = null;
+    if ('websocket' in window) {
+        websocket = new websocket;
+    }else {
+        alert('该浏览器不支持WebSocket');
+    }
+    websocket.onopen(function (event) {
+
+    });
+</script>
 </body>
 </html>
 
