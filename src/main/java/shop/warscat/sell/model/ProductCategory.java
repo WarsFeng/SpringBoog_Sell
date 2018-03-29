@@ -33,10 +33,10 @@ public class ProductCategory {
     /**商品分类类型*/
     private Integer categoryType;
 
-//    /**数据创建时间*/
-//    private Date createTime;
-//
-//    /**数据更新时间*/
-//    private Date updateTime;
+    /**数据创建时间*/
+    private Date createTime;
+
+    /**数据更新时间*/
+    private Date updateTime;
 
 }

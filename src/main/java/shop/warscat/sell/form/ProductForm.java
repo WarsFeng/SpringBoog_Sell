@@ -2,6 +2,7 @@ package shop.warscat.sell.form;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 
 /**
@@ -17,12 +18,15 @@ public class ProductForm {
     private String productId;
 
     /**名称*/
+    @NotEmpty(message = "名称必填")
     private String productName;
 
     /**单价*/
+    @NotEmpty(message = "单价必填")
     private BigDecimal productPrice;
 
     /**库存*/
+    @NotEmpty(message = "库存必填")
     private Integer productStock;
 
     /**描述*/
@@ -35,5 +39,6 @@ public class ProductForm {
     private Integer productStatus;
 
     /**类目编号*/
+    @NotEmpty(message = "类目编号必填")
     private Integer categoryType;
 }

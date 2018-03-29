@@ -1,20 +1,25 @@
 package shop.warscat.sell.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import shop.warscat.sell.enums.ResultEnum;
 import shop.warscat.sell.exception.SellException;
+import shop.warscat.sell.form.ProductForm;
 import shop.warscat.sell.model.ProductCategory;
 import shop.warscat.sell.model.ProductInfo;
 import shop.warscat.sell.service.ProductCategoryService;
 import shop.warscat.sell.service.ProductInfoService;
+import shop.warscat.sell.utils.KeyUtils;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -97,6 +102,34 @@ public class SellerProductController {
         List<ProductCategory> categoryList = productCategoryService.findAll();
         map.put("categoryList",categoryList);
         return new ModelAndView("product/index",map);
+    }
+
+    //商品保存
+    @PostMapping("/save")
+    public ModelAndView save(@Valid ProductForm productForm, BindingResult bindingResult, Map<String,Object> map){
+        String returnUrl = "/sell/seller/product";
+        if (bindingResult.hasErrors()) {
+            map.put("msg", bindingResult.getFieldError().getDefaultMessage());
+            map.put("url", returnUrl+"/index");
+            return new ModelAndView("common/error", map);
+        }
+        ProductInfo product = new ProductInfo();
+        BeanUtils.copyProperties(productForm, product);
+        if (StringUtils.isEmpty(product.getProductId())) {
+            product.setProductId(KeyUtils.getUniquId());
+        }
+        //保存
+        try {
+            productService.save(product);
+            log.info("[商品][新增]Id:{}",product.getProductId());
+        } catch (SellException e) {
+            map.put("msg", e.getMessage());
+            map.put("url", returnUrl+"/index");
+            return new ModelAndView("common/error", map);
+        }
+        map.put("msg",ResultEnum.ADD_SUCCES.getMessage());
+        map.put("url",returnUrl+"/list");
+        return new ModelAndView("common/succes",map);
     }
 
 

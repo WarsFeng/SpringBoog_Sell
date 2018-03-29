@@ -34,7 +34,10 @@ public enum ResultEnum {
     WX_WEB_ERROR(19,"微信网页授权错误"),
     FINISH(20,"订单完结！"),
     UP_SUCCES(21,"商品上架成功！"),
-    DOWN_SUCCES(22,"商品下架成功！")
+    DOWN_SUCCES(22,"商品下架成功！"),
+    ADD_SUCCES(23,"商品添加成功！"),
+    CATEGORY_NOT_EXIST(24,"商品分类不存在,请先添加分类！"),
+    CATEGORY_ADD_SUCCES(25,"分类添加/修改成功！")
     ;
 
     private Integer code;
