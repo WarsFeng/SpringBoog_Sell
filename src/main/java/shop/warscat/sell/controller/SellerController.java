@@ -28,9 +28,12 @@ public class SellerController {
     @Autowired
     private SellerService sellerService;
 
-    @GetMapping("/login")
-    public ModelAndView login(@RequestParam("username") String username
-    , @RequestParam("password") String password, HttpSession session, Map<String,Object> map){
+    @RequestMapping("/login")
+    public ModelAndView login(@RequestParam(value = "username",defaultValue = "1") String username
+    , @RequestParam(value = "password",defaultValue = "1") String password, HttpSession session, Map<String,Object> map){
+        if (username.equals("1")) {
+            return new ModelAndView("common/login");
+        }
         if (sellerService.login(username,password)) {
             session.setAttribute("token","token");
             session.setMaxInactiveInterval(-1);

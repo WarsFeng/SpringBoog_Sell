@@ -1,5 +1,6 @@
 package shop.warscat.sell.exception;
 
+import lombok.Getter;
 import shop.warscat.sell.enums.ResultEnum;
 
 /**
@@ -9,7 +10,7 @@ import shop.warscat.sell.enums.ResultEnum;
  * Date: 2018-03-21
  * Time: 14:54
  */
-
+@Getter
 public class SellException extends RuntimeException {
 
     private Integer code;
