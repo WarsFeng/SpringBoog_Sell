@@ -3,13 +3,11 @@ package shop.warscat.sell.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import shop.warscat.sell.service.SellerService;
 import shop.warscat.sell.utils.KeyUtils;
+import shop.warscat.sell.utils.MessageUtils;
 
 import javax.servlet.http.HttpSession;
 import java.net.HttpCookie;
@@ -43,5 +41,20 @@ public class SellerController {
         map.put("msg","登录失败!");
         map.put("url","/sell/seller/login");
         return new ModelAndView("common/error",map);
+    }
+
+    /**
+     * 新订单消息通知,客户端定时Ajax调用此方法
+     * @return 1为有新消息,0无,
+     */
+    @PostMapping("/message")
+    @ResponseBody
+    public Integer message(){
+        Integer messageCode = MessageUtils.getMessageCode();
+        if (messageCode >0) {
+            MessageUtils.lessMessage();
+            return messageCode;
+        }
+        return 0;
     }
 }

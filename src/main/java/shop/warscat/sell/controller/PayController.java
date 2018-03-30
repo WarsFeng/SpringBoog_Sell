@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import shop.warscat.sell.service.OrderService;
 import shop.warscat.sell.service.PayService;
+import shop.warscat.sell.utils.MessageUtils;
 
 import java.util.Map;
 
@@ -53,6 +54,8 @@ public class PayController {
     public ModelAndView notify(@RequestBody String notifyData) {
         WxPayOrderNotifyResult notifyResult = payService.notify(notifyData);
         log.info("[微信支付][异步通知]返回数据：{}",notifyResult);
+        //用户成功支付,messageCode++
+        MessageUtils.addMessage();
         return new ModelAndView("pay/success");
     }
 }

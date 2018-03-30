@@ -6,9 +6,11 @@
 <#--边栏-->
     <#include "../common/nav.ftl">
     <div id="page-content-wrapper">
+        <h1 style="text-align: center" id="message"></h1>
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
+
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
@@ -53,15 +55,46 @@
     </div>
 </div>
 <script>
-    var websocket = null;
-    if ('websocket' in window) {
-        websocket = new websocket;
-    }else {
-        alert('该浏览器不支持WebSocket');
-    }
-    websocket.onopen(function (event) {
+    function createXmlHttp() {
+        var xmlHttp;
+        try { // Firefox, Opera 8.0+, Safari
+            xmlHttp = new XMLHttpRequest();
+        }
+        catch (e) {
+            try {// Internet Explorer
+                xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }
+            catch (e) {
+                try {
+                    xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                catch (e) {
+                }
+            }
+        }
 
-    });
+        return xmlHttp;
+    }
+
+    var xhr = createXmlHttp();
+    var audio = new Audio();
+    audio.src = "http://wars.natapp1.cc/sell/audio/song.mp3";
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState = 4) {
+            if (xhr.status = 200) {
+                if (xhr.responseText > 0) {
+                    audio.play();
+                    document.getElementById("message").innerText = "您有新的订单,请刷新页面！";
+                }
+            }
+        }
+    }
+    setInterval(function () {
+        xhr.open("POST", "/sell/seller/message", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.send();
+    }, 10000);
+
 </script>
 </body>
 </html>
