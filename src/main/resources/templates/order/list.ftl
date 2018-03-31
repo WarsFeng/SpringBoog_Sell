@@ -76,15 +76,15 @@
         return xmlHttp;
     }
 
+    var audios = new Audio();
+    audios.src = "http://wars.natapp1.cc/sell/audio/song.mp3";
     var xhr = createXmlHttp();
-    var audio = new Audio();
-    audio.src = "http://wars.natapp1.cc/sell/audio/song.mp3";
     xhr.onreadystatechange = function () {
         if (xhr.readyState = 4) {
             if (xhr.status = 200) {
                 if (xhr.responseText > 0) {
-                    audio.play();
                     document.getElementById("message").innerText = "您有新的订单,请刷新页面！";
+                    audios.play();
                 }
             }
         }

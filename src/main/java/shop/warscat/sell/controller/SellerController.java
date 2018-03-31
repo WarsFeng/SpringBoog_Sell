@@ -31,6 +31,7 @@ public class SellerController {
     @RequestMapping("/login")
     public ModelAndView login(@RequestParam(value = "username",defaultValue = "1") String username
     , @RequestParam(value = "password",defaultValue = "1") String password, HttpSession session, Map<String,Object> map){
+        log.info("帐号:{}密码:{}",username,password);
         if (username.equals("1")) {
             return new ModelAndView("common/login");
         }
